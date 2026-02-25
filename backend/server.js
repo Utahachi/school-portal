@@ -16,6 +16,16 @@ app.get("/users", async (req, res) => {
   }
 });
 
+app.get("/courses", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM courses");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching courses");
+  }
+});
+
 app.get("/", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
