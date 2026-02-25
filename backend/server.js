@@ -10,6 +10,9 @@ require("dotenv").config();
 const roleCheck = require("./roleMiddleware");
 const auth = require("./authMiddleware");
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
 app.use(express.json());
 
 // Get all users
