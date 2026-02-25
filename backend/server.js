@@ -7,7 +7,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const auth = require("./authMiddleware");
 const roleCheck = require("./roleMiddleware");
 const auth = require("./authMiddleware");
 
