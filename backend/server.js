@@ -7,6 +7,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+const auth = require("./authMiddleware");
+
 app.use(express.json());
 
 // Get all users
@@ -85,6 +87,11 @@ app.post("/login", async (req, res) => {
     console.error(err);
     res.status(500).send("Login error");
   }
+});
+
+app.get("/courses", auth, async (req, res) => {
+  const result = await pool.query("SELECT * FROM courses");
+  res.json(result.rows);
 });
 
 app.get("/", async (req, res) => {
