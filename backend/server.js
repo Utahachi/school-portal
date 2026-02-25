@@ -4,6 +4,9 @@ const pool = require("./db");
 const app = express();
 const bcrypt = require("bcrypt");
 
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
 app.use(express.json());
 
 // Get all users
@@ -64,9 +67,18 @@ app.post("/login", async (req, res) => {
     if (!match)
       return res.status(401).send("Invalid password");
 
+    const token = jwt.sign(
+        {
+            id: user.id,
+            role: user.role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+    );
+        
     res.json({
       message: "Login successful",
-      user: user.email
+      token
     });
 
   } catch (err) {
