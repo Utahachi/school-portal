@@ -75,18 +75,29 @@ app.post("/login", async (req, res) => {
     if (!match)
       return res.status(401).send("Invalid password");
 
-    const token = jwt.sign(
-        {
-            id: user.id,
-            role: user.role
-        },
+    const accessToken = jwt.sign(
+        { id: user.id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "15m" } // short-lived access token
     );
         
+    const refreshToken = jwt.sign(
+        { id: user.id, role: user.role },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: "7d" } // long-lived refresh token
+    );
+
+    // Store refresh token in cookie (optional)
+    res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: false, // true if using HTTPS
+    sameSite: "strict",
+    });
+
     res.json({
       message: "Login successful",
-      token
+      accessToken,
+      refreshToken
     });
 
   } catch (err) {
