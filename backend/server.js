@@ -2,6 +2,7 @@ const express = require("express");
 const pool = require("./db");
 
 const app = express();
+const bcrypt = require("bcrypt");
 
 app.use(express.json());
 
@@ -23,6 +24,24 @@ app.get("/courses", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching courses");
+  }
+});
+
+app.post("/register", async (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      "INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4) RETURNING *",
+      [name, email, hashedPassword, role]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Registration failed");
   }
 });
 
