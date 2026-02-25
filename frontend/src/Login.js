@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // for redirecting after login
+import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,32 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    // Save token
+        localStorage.setItem("token", data.token);
+
+    // Decode token
+    const decoded = jwtDecode(data.token);
+
+    // Redirect based on role
+    if (decoded.role === "Admin") {
+        navigate("/admin");
+    } else if (decoded.role === "Teacher") {
+        navigate("/teacher");
+    } else {
+        navigate("/student");
+    }
+};
 
     try {
       const res = await axios.post(
