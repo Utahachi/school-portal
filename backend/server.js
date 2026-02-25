@@ -144,6 +144,11 @@ app.post("/refresh", (req, res) => {
   }
 });
 
+app.post("/logout", (req, res) => {
+  res.clearCookie("refreshToken");
+  res.json({ message: "Logged out successfully" });
+});
+
 app.get("/courses", auth, async (req, res) => {
   const result = await pool.query("SELECT * FROM courses");
   res.json(result.rows);
