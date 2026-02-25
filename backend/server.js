@@ -7,7 +7,11 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+const roleCheck = require("./roleMiddleware");
 const auth = require("./authMiddleware");
+
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 app.use(express.json());
 
@@ -32,6 +36,7 @@ app.get("/courses", async (req, res) => {
   }
 });
 
+// Registration route
 app.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -50,6 +55,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
+// Login route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -69,24 +75,78 @@ app.post("/login", async (req, res) => {
     if (!match)
       return res.status(401).send("Invalid password");
 
-    const token = jwt.sign(
-        {
-            id: user.id,
-            role: user.role
-        },
+    const accessToken = jwt.sign(
+        { id: user.id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "15m" } // short-lived access token
     );
         
+    const refreshToken = jwt.sign(
+        { id: user.id, role: user.role },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: "7d" } // long-lived refresh token
+    );
+
+    // Store refresh token in cookie (optional)
+    res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: false, // true if using HTTPS
+    sameSite: "strict",
+    });
+
     res.json({
       message: "Login successful",
-      token
+      accessToken,
+      refreshToken
     });
 
   } catch (err) {
     console.error(err);
     res.status(500).send("Login error");
   }
+});
+
+// Protected route example
+app.post("/courses", auth, roleCheck(['teacher','admin']), async (req, res) => {
+  const { title, description } = req.body;
+  const teacher_id = req.user.id; // from JWT
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO courses (title, description, teacher_id) VALUES ($1, $2, $3) RETURNING *",
+      [title, description, teacher_id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating course");
+  }
+});
+
+app.post("/refresh", (req, res) => {
+  const token = req.cookies.refreshToken;
+
+  if (!token) return res.status(401).send("No refresh token provided");
+
+  try {
+    const user = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    const accessToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.json({ accessToken });
+  } catch (err) {
+    console.error(err);
+    res.status(403).send("Invalid refresh token");
+  }
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("refreshToken");
+  res.json({ message: "Logged out successfully" });
 });
 
 app.get("/courses", auth, async (req, res) => {
