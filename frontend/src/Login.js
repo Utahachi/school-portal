@@ -1,10 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // for redirecting after login
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,6 +22,7 @@ export default function Login() {
       localStorage.setItem("accessToken", res.data.accessToken);
 
       setMessage("Login successful!");
+      navigate("/dashboard"); // redirect to dashboard after login
     } catch (err) {
       setMessage("Login failed");
       console.error(err);
