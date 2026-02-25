@@ -13,6 +13,13 @@ const auth = require("./authMiddleware");
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
+const cors = require("cors");
+
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Get all users
