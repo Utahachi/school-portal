@@ -8,6 +8,8 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const auth = require("./authMiddleware");
+const roleCheck = require("./roleMiddleware");
+const auth = require("./authMiddleware");
 
 app.use(express.json());
 
@@ -32,6 +34,7 @@ app.get("/courses", async (req, res) => {
   }
 });
 
+// Registration route
 app.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -50,6 +53,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
+// Login route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -86,6 +90,23 @@ app.post("/login", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Login error");
+  }
+});
+
+// Protected route example
+app.post("/courses", auth, roleCheck(['teacher','admin']), async (req, res) => {
+  const { title, description } = req.body;
+  const teacher_id = req.user.id; // from JWT
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO courses (title, description, teacher_id) VALUES ($1, $2, $3) RETURNING *",
+      [title, description, teacher_id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating course");
   }
 });
 
