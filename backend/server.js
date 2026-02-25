@@ -123,6 +123,27 @@ app.post("/courses", auth, roleCheck(['teacher','admin']), async (req, res) => {
   }
 });
 
+app.post("/refresh", (req, res) => {
+  const token = req.cookies.refreshToken;
+
+  if (!token) return res.status(401).send("No refresh token provided");
+
+  try {
+    const user = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    const accessToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.json({ accessToken });
+  } catch (err) {
+    console.error(err);
+    res.status(403).send("Invalid refresh token");
+  }
+});
+
 app.get("/courses", auth, async (req, res) => {
   const result = await pool.query("SELECT * FROM courses");
   res.json(result.rows);
