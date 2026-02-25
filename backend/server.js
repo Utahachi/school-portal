@@ -45,6 +45,36 @@ app.post("/register", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const result = await pool.query(
+      "SELECT * FROM users WHERE email=$1",
+      [email]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(401).send("User not found");
+
+    const user = result.rows[0];
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match)
+      return res.status(401).send("Invalid password");
+
+    res.json({
+      message: "Login successful",
+      user: user.email
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Login error");
+  }
+});
+
 app.get("/", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
