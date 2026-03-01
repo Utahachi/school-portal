@@ -1,17 +1,19 @@
 import { useNavigate } from "react-router-dom";
 
-export default function Dashboard() {
+function Dashboard() {
   const navigate = useNavigate();
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
-    navigate("/");
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
-    <div style={{ padding: "40px" }}>
+    <div>
       <h1>Dashboard</h1>
       <button onClick={logout}>Logout</button>
     </div>
   );
 }
+
+export default Dashboard;
