@@ -3,11 +3,13 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"; // for redirecting after login
 import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,7 +31,8 @@ export default function Login() {
       );
 
       // Save access token
-      localStorage.setItem("accessToken", res.data.accessToken);
+      // store token using context
+      login(res.data.accessToken);
 
       // Decode token
       const decoded = jwtDecode(res.data.accessToken);
