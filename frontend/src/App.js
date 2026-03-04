@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
-import ProtectedRoute from ".utils/ProtectedRoute";
+import ProtectedRoute from "./utils/ProtectedRoute";
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import AdminDashboard from "./pages/AdminDashboard";

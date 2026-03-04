@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"; // for redirecting after login
 import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "./context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
